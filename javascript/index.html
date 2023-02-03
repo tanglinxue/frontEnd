@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		1.闭包
+		概念:外部函数调用之后其变量对象本应该被销毁，但闭包的存在使我们仍然可以访问外部函数的变量对象
+		用途:获取私有作用域中的变量，同时这些变量可以保存到内存中,不会释放外部的引用，从而函数内部的值可以保留
+		创建闭包最常见方式，就是在一个函数内部创建另一个函数
+		匿名函数最大的用途是创建闭包，并且还可以构建命名空间，以减少全局变量的使用。从而使用闭包模块化代码，减少全局变量的污染。
+		闭包的缺点就是常驻内存会增大内存使用量，并且使用不当很容易造成内存泄露。
+		因为这些自由变量被维护在闭包函数内，外部环境不可直接访问，必须通过闭包函数来访问，
+		所以闭包函数也能给这些自由变量提供一定的私有性和访问控制，防止被外部轻易篡改。
+		2.判断类型的方法
+		typeof
+		instanceof
+		constructor
+		Object.propotype.toString.call(obj).slice(8,-1).toLowerCase()
+		3.数组扁平化
+		<script>
+			function flatten1(array) {
+				return array.reduce((pre, item) => {
+					if (Array.isArray(item)) {
+						return pre.concat(flatten1(item))
+					} else {
+						return pre.concat(item)
+					}
+				}, [])
+			}
+		</script>
+		4.事件轮询机制
+		js 是单线程执行的，js中的任务按顺序一个一个的执行，但是一个任务耗时太长
+		那么后面的任务就需要等待，为了解决这种情况，将任务分为了同步任务和异步任务，而异步任务又可以分为微任务和宏任务。
+		主线程内的任务执行完毕为空，会去事件队列读取对应的函数，进入主线程执行。
+		在js引擎中，存在一个叫monitoring process的进程，这个进程会不断的检查主线程的执行情况，
+		一旦为空，就会去事件队列检查有哪些待执行的函数。
+		存在微任务的话，那么就执行所有的微任务
+		微任务都执行完之后，执行第一个宏任务，
+		宏任务一般包括：整体代码定时器，事件绑定，ajax
+		微任务一般包括：原生Promise(有些实现的promise将then方法放到了宏任务中)、vue的$nextTick
+		5.instanceOf
+		<script>
+			function myInstanceOf(obj, Type) {
+				// 得到一个原型对象
+				let protoObj = obj.__proto__
+				while (protoObj !== null) { // 存在原型对象
+					// 如果就是Type的原型对象, 直接返回true
+					if (protoObj === Type.prototype) {
+						return true
+					}
+					// 取出下一个原型对象, 并保存
+					protoObj = protoObj.__proto__
+				}
+				// 出了循环, 说明类型不匹配
+				return false
+			}
+		</script>
+		6.echart使用方式
+		import * as echarts from "echarts";
+		var chartDom = document.getElementById("main"); //获取上面定义好的 div
+		var myChart = echarts.init(chartDom);
+		myChart.setOption(option);
+
+		7.ajax实现原理
+		<script>
+			document.getElementById("ok").onclick = function() {
+				var xhr = new XMLHttpRequest(); //获取XmlHttpRequest对象
+				xhr.onreadystatechange = function() { //回调函数
+					if (xhr.readyState == 4) { //回调状态
+						if (xhr.status == 200 || xhr.status == 304) //服务器状态吗
+						{
+							var date = xhr.responseText; //服务器返回数据
+							alert(date);
+						}
+					}
+				};
+				var id = "A001";
+				alert(id);
+				xhr.open("GET", "../testGetServelet?id=" + id, true); //1、发送方式2、页面路径，3、请求是否异步，默认为true
+				xhr.send(null); //发送数据--get方式，这里不用写数据，即使写了数据服务器端也无法接收
+
+				//如果是POST请求方式，设置请求首部信息
+				xhr.open("post", "../testGetServelet", true);
+				xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				xhr.send("a=1&b=2");
+			};
+		</script>
+		8.websocket的连接
+		<script>
+			const ws = new WebSocket('ws://localhost:8080/')
+			ws.onopen = () => {
+				console.log('服务器已连接')
+			}
+			ws.onmessage = (msg) => {
+				console.log('来自服务器端的数据：' + msg.data) //监听接受来自服务端的信息
+			}
+			ws.onclose = () => {
+				console.log('服务器关闭')
+			}
+
+			function sendserver() {
+				ws.send('nihao你好啊') //向服务端发送信息
+			}
+		</script>
+		9.axios
+		<script>
+			const instance = axios.create({
+				baseURL: authBaseURL,
+				timeout: 300000,
+			})
+			// 添加请求拦截器
+			instance.interceptors.request.use(function(config) {
+				// 在发送请求之前做些什么
+				return config
+			}, function(error) {
+				// 对请求错误做些什么
+				return Promise.reject(error);
+			})
+			// 添加响应拦截器
+			instance.interceptors.response.use(function(response) {
+				// 2xx 范围内的状态码都会触发该函数。
+				// 对响应数据做点什么
+				return response
+			}, function(error) {
+				// 对请求错误做些什么
+				return Promise.reject(error);
+			})
+		</script>
+
+		10.谈谈call()/apply()/bind()
+		call(obj)/apply(obj): 调用函数, 指定函数中的this为第一个参数的值
+		bind(obj): 返回一个新的函数, 新函数内部会调用原来的函数, 且this为bind()指定的第一参数的值
+		注意: 如果obj是null/undefined, this为window
+
+		11. es6新特征
+		(1)const 与 let 变量
+		暂时性死区,无法预解析
+		使用let声明的变量可以重新赋值,但是不能在同一作用域内重新声明
+		使用const声明的变量必须赋值初始化,但是不能在同一作用域类重新声明也无法重新赋值
+		(2)模板字面量
+		(3)解构数组 解构对象const [x, y, z] = point;const {type, color, karat} = gemstone;
+		(4)对象字面量简写法,简写属性和方法
+		(5)for...of循环 可以循环任何可迭代类型的数据 包含以下数据类型：String、Array、Map 和 Set，
+		注意不包含 Object 数据类型（即 {}）。默认情况下，对象不可迭代。
+		for...in 循环会带来很大的麻烦。因为 for...in 循环循环访问所有可枚举的属性，意味着如果向数组或对象的原型中添加任何其他属性，这些属性也会出现在循环中。
+		for...of 循环将只循环访问自身的值。
+		(6)展开运算符展开运算符（用三个连续的点 (...) 表示）是 ES6 中的新概念，使你能够将字面量对象展开为多个元素
+		(7)剩余参数(可变参数)
+		(8)ES6箭头函数 但是箭头函数始终都是表达式, 全程是箭头函数表达式this的值和函数外面的this的值是一样的
+		箭头函数是匿名函数，不能作为构造函数，不能使用new
+		箭头函数不能绑定arguments,取而代之用rest参数…解决
+		箭头函数没有原型prototype属性
+		箭头函数的this永远指向其上下文的this,没有办法改变其指向
+		普通函数的this指向调用它的对象
+		箭头函数不绑定this，会捕获其所在的上下文的this值，作为自己的this值
+		(9)默认参数函数
+		(10)class ES6类只是一个语法糖,原型继续实际上在底层隐藏起来, 与传统类机制语言有些区别
+
+		12.rem适配
+		<script>
+			//获取屏幕宽度
+			var width = document.documentElement.clientWidth;
+			//获取html
+			var htmlNode = document.querySelector('html');
+			//设置html字体大小
+			htmlNode.style.fontSize = width / 16 + 'px';
+			1 rem等于html根元素设定的font - size的px值
+			如果css里面没有设定html的font - size， 则默认浏览器以1rem = 16 px来换算。
+			1 rem
+			相对于页面的大小， 通常的做法是给html根元素设置一个字大小， 其他元素的长度相对于根元素的大小。
+			1 em：
+			相对于父元素的字体大小
+			1 vh / 1 vw：
+			视窗的宽度 / 高度。 100 vh / 100 vw相当于整个视窗的宽高。
+			1 vh = 视窗高度的1 % ；1 vw = 视窗宽度的1 %
+				像素： 相对于屏幕分辨率而言
+		</script>
+
+
+		13.深拷贝
+		<script>
+			function deepClone(target, map = new Map()) {
+				if (target instanceof Array || (target !== null && typeof target === 'object')) { // 被处理的目标是数组/对象
+					let cloneTarget = map.get(target)
+					if (cloneTarget) return cloneTarget // map中存在对应的克隆对象, 直接将其返回,// 不要对同一个对象进行多次clone
+					cloneTarget = target instanceof Array ? [] : {};
+					map.set(target, cloneTarget)
+					if (target instanceof Array) {
+						target.forEach((item, index) => cloneTarget[index] = deepClone(item, map))
+					} else {
+						for (let key in target) {
+							if (target.hasOwnProperty(key)) {
+								cloneTarget[key] = deepClone(target[key], map) // 对属性值进行递归处理
+							}
+						}
+					}
+				} else {
+					return target
+				}
+			}
+		</script>
+		
+		14.防抖和节流的概念
+		    1. 事件频繁触发可能造成的问题?
+		    (1). 一些浏览器事件:window.onresize、window.mousemove等，触发的频率非常高，会造成浏览器性能问题
+		    (2). 如果向后台发送请求，频繁触发，对服务器造成不必要的压力
+		    2. 如何限制事件处理函数频繁调用
+		    (1). 函数节流
+		    (2). 函数防抖
+		    3. 函数节流(throttle)
+		    (1). 理解:
+		    在函数需要频繁触发时: 函数执行一次后，只有大于设定的执行周期后才会执行第二次
+		    适合多次事件按时间做平均分配触发
+		    (2). 场景：
+		    窗口调整（resize）
+		    页面滚动（scroll）
+		    DOM 元素的拖拽功能实现（mousemove）
+		    抢购疯狂点击（click）
+		    <script>
+		      //用来返回节流函数的工具函数
+		      export function throttle(callback, delay) {
+		        let pre = 0; // 默认值不要是Date.now() ==> 第1次事件立即调用
+		        return function (event) { // 节流函数/真正的事件回调函数 this是发生事件的标签
+		          const current = Date.now()
+		          // 调用真正处理事件的函数, this是事件源, 参数是event
+		          if (current - pre > delay) { // 只有离上一次调用callback的时间差大于delay
+		            callback.call(this, event)
+		            // 记录此次调用的时间
+		            pre = current
+		          }
+		        }
+		      }
+		    </script>
+		    4. 函数防抖(debounce)
+		    (1). 理解:
+		    在函数需要频繁触发时: 在规定时间内，只让最后一次生效，前面的不生效。
+		    适合多次事件一次响应的情况
+		    (2). 场景：
+		    输入框实时搜索联想（keyup/input）
+		    <script>
+		      //用来返回防抖函数的工具函数
+		      export function debounce(callback, delay) {
+		        return function (event) {
+		          //if (callback.timeoutId) { // 会查找原型链
+		          if (callback.hasOwnProperty('timeoutId')) { // 不会查找原型链
+		            clearTimeout(callback.timeoutId)
+		          }
+		          // 如果上次事件还没有真正处理, 取消它
+		          // 发事件发生指定事件后才调用处理事件的回调函数
+		          // 启动定时器, 只是准备真正处理
+		          callback.timeoutId = setTimeout(() => {
+		            // 正在处理事件
+		            callback.call(this, event)
+		            // 删除准备处理的标记
+		            delete callback.timeoutId
+		          }, delay)
+		        }
+		      }
+		    </script>
+	</body>
+</html>

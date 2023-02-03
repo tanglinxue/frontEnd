@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		1. data为什么是一个函数？
+		一个组件的data选项必须是一个函数，因此每个实例可以维护一份被返回对象的独立的拷贝，如果没有这条规则，多处复用组件的地方会共享同一个数据，从而影响其他的实例。
+
+		2.$nextTick
+		Vue是异步渲染，data改变后DOM不会立即变化
+		$nextTick会在DOM渲染后被触发，以获取最新的DOM
+
+		3.父子组件的生命周期顺序
+		(1).挂载阶段
+		执行顺序为：
+		beforeCreate -> created -> beforeMount -> beforeCreate -> created -> beforeMount -> mounted -> mounted
+		一定得等子组件挂载完毕后，父组件才能挂载完毕，所以父组件的mounted在最后。
+		(2).更新阶段
+		beforeUpdate -> beforeUpdate -> updated -> updated
+		(3).销毁阶段
+		beforeDestroy -> beforeDestroy -> destroyed -> destroyed
+		<script>
+			beforeCreate() {
+				// 并没有实现数据劫持代理
+				console.log(this.msg)
+				// 面试题: 如何在beforeCreate中获取data中的数据
+				this.$nextTick(function() {
+					console.log(this.msg);
+				})
+				this.$options.data()["msg"]
+			}
+			created() {
+				// 已经进行了数据劫持代理
+				console.log(this.msg)
+			}
+		</script>
+
+		4. watch和computed的区别
+		(1)计算属性computed:
+		支持缓存，只有依赖数据发生改变，才会重新进行计算
+		不支持异步，当computed内有异步操作时无效，无法监听数据的变化，
+		如果一个属性是由其他属性计算而来的，这个属性依赖其他属性，是一个多对一或者一对一，一般用computed
+		如果computed属性属性值是函数，那么默认会走get方法；函数的返回值就是属性的属性值；在computed中的，属性都有一个get和一个set方法，
+		当数据变化时，调用set方法。
+		(2)watch
+		不支持缓存，数据变化直接会触发相应的操作；
+		watch支持异步；
+		监听的函数接收两个参数，第一个参数是最新的值，第二个参数是输入之前的值；
+		当一个属性发生变化时，需要执行对应的操作；一对多；
+		监听数据必须是data中声明过或者父组件传递过来的props中的数据，当数据变化时，触发其他操作，函数有两个参数，
+		immediate：组件加载立即触发回调函数执行，
+		deep: 深度监听，为了发现对象内部值的变化，复杂类型的数据时使用，例如数组中的对象内容的改变，注意监听数组的变动不需要这么做。
+		注意：deep无法监听到数组的变动和对象的新增删除, 参考vue数组变异, 只有以响应式的方式触发才会被监听到。
+
+		5.vue的数据传递方式
+		(1)通过路由带参数进行传值
+		传值this.$router.push({ path: '/conponentsB', query: { orderId: 123 } }) // 跳转到B
+		取值this.$route.query.orderId
+		(2)通过设置 Session Storage缓存的形式进行传递
+		(3)父组件往子组件传值props,子组件往父组件传值，通过emit事件
+		不同组件之间传值，通过eventBus（小项目少页面用eventBus，大项目多页面使用 vuex）this.$bus
+		(4)vuex进行传值
+		(5)slot插槽传递数据 scope="atguigu"
+		默认插槽：定义一个插槽（挖个坑，等着组件的使用者进行填充）
+		具名插槽：
+		<slot name="center" />
+		作用域插槽：
+		<slot :games="games" msg="hello" />
+		(6)provide inject
+		<script>
+			provide()
+			return {
+				closeCurrent: this.closeCurrent,
+				reload: this.routeReload // 刷新当前页
+			}
+			}
+			inject: ["closeCurrent", "reload"],
+		</script>
+		(7)PubSub
+		<script>
+			PubSub.publish('名字', index)
+			PubSub.subscribe('名字', (msg, index) => {
+
+			})
+		</script>
+
+		6 vue的内置组件
+		<component :is="componentId"></component> 用于动态组件
+		<transition>
+			<keep-alive></keep-alive>
+			<slot></slot>
+
+			7. 全局路由的作用
+			<script>
+				//全局前置路由守卫————初始化的时候被调用、每次路由切换之前被调用
+				router.beforeEach((to, from, next) => {
+					console.log('前置路由守卫', to, from)
+					if (to.meta.isAuth) { //判断是否需要鉴权
+						if (localStorage.getItem('school') === 'atguigu') {
+							next()
+						} else {
+							alert('学校名不对，无权限查看！')
+						}
+					} else {
+						next()
+					}
+				})
+				//全局后置路由守卫————初始化的时候被调用、每次路由切换之后被调用
+				router.afterEach((to, from) => {
+					console.log('后置路由守卫', to, from)
+					document.title = to.meta.title || '硅谷系统'
+				})
+				//路由独享守卫
+				beforeEnter(to, from, next) {
+					console.log("beforeEnter", to, from);
+				}
+
+				// 不！能！获取组件实例 `this`
+				beforeRouteEnter(to, from, next) {
+					console.log("beforeRouteEnter ", to, from);
+					next();
+				}
+				// 在当前路由改变，但是该组件被复⽤时调⽤
+				// 可以访问组件实例 `this`
+				beforeRouteUpdate(to, from, next) {
+					console.log("beforeRouteUpdate ", to, from);
+					next();
+				}
+				// 导航离开该组件的对应路由时调⽤
+				// 可以访问组件实例 `this`
+				beforeRouteLeave(to, from, next) {}
+			</script>
+			8.自定义指令
+			<script>
+				//定义全局指令
+				Vue.directive('fbind', {
+					//指令与元素成功绑定时（一上来）
+					bind(element, binding) {
+						element.value = binding.value
+					},
+					//指令所在元素被插入页面时
+					inserted(element, binding) {
+						element.focus()
+					},
+					//指令所在的模板被重新解析时
+					update(element, binding) {
+						element.value = binding.value
+					}
+				})
+				// 组件内部指令
+				directives: {
+					big(element, binding) {
+						console.log('big', this) //注意此处的this是window
+						// console.log('big')
+						element.innerText = binding.value * 10
+					}
+				}
+			</script>
+			9.nextTick
+			作用：在下一次 DOM 更新结束后执行其指定的回调。
+			什么时候用：当改变数据后，要基于更新后的新DOM进行某些操作时，要在nextTick所指定的回调函数中执行。
+			nextTick是在下次DOM更新循环结束之后执行延迟回调，在修改数据之后使用nextTick，则可以在回调中获取更新后的DOM
+			<script>
+				methods: {
+					get() {
+						this.$http.get('/api/article').then(function(res) {
+							this.list = res.data.data.list
+							// ref list 引用了ul元素，我想把第一个li颜色变为红色
+							this.$refs.list.getElementsByTagName('li')[0].style.color = 'red'
+						})
+					},
+					change() {
+						this.testMsg = "修改后的值";
+						this.$nextTick(function() {
+							console.log(this.$refs.aa.innerText); //输出：修改后的值
+						});
+					}
+				}
+			</script>
+
+			10.组件的v-model
+			<input v-model="price">等于 <input type="text" :value="price" 　@input="price=$event.target.value">
+			<price-input v-model="price"></price-input>
+			<price-input :value="price" @input="onInput"></price-input>
+			父
+			onInput: function(val) {
+			this.price = val;
+			}
+			子
+			props: ["value"],
+			this.$emit('input', val);
+
+			11..sync修饰符
+			<text-document :title.sync="title"></text-document>
+			为了方便这种写法，vue提供了.sync修饰符，说白了就是一种简写的方式，我们可以将其当作是一种语法糖
+			<text-document :title="title" @update:title="val => title = val"></text-document>
+			this.$emit('update:title', newTitle)
+
+			<my-comp :foo.sync="bar"></my-comp>
+			<my-comp :foo="bar" @update:foo="val => bar = val"></my-comp>
+			子组件
+			props: ['foo'],
+			this.$emit('update:foo', ++this.copyFoo);
+
+
+			12.SPA单页面
+			SPA（ single-page application ）仅在 Web 页面初始化时加载相应的 HTML、JavaScript 和 CSS。
+			一旦页面加载完成，SPA 不会因为用户的操作而进行页面的重新加载或跳转；取而代之的是利用路由机制实现 HTML 内容的变换，UI 与用户的交互，避免页面的重新加载。
+			优点：
+			用户体验好、快，内容的改变不需要重新加载整个页面，避免了不必要的跳转和重复渲染；
+			基于上面一点，SPA 相对对服务器压力小；
+			前后端职责分离，架构清晰，前端进行交互逻辑，后端负责数据处理；
+			缺点：
+			初次加载耗时多：为实现单页 Web 应用功能及显示效果，需要在加载页面的时候将 JavaScript、CSS 统一加载，部分页面按需加载；
+			前进后退路由管理：由于单页应用在一个页面中显示所有的内容，所以不能使用浏览器的前进后退功能，所有的页面切换需要自己建立堆栈管理；
+			SEO 难度较大：由于所有的内容都在一个页面中动态替换显示，所以在 SEO 上其有着天然的弱势。
+
+			13.vue2和vue3的相比较而言
+			Vue3中设计了一套强大的组合API代替了Vue2中的option API,复用性更强了
+			更好的支持TS
+			最主要的
+			Vue中使用了Proxy配合Reflect代理了Vue2中的Object.defineProperty()方法实现数据的响应式(数据代理)
+			重写了虚拟DOM,速度更快了
+			新的组件：Fragment(片段)/Teleport(瞬移)/Suspense(不确定)
+			设计了一个新的脚手架工具,vite
+
+			14.hash和history区别
+			对于一个url来说，什么是hash值？—— #及其后面的内容就是hash值。
+			hash值不会包含在 HTTP 请求中，即：hash值不会带给服务器。
+			(1)hash模式：
+			window.onhashchange
+			地址中永远带着#号，不美观 。
+			若以后将地址通过第三方手机app分享，若app校验严格，则地址会被标记为不合法。
+			兼容性较好。
+			(2)history模式：
+			利用history对象，重新封装pushState与replaceState方法，实现对地址变化的监听。
+			1. 地址干净，美观 。
+			2. 兼容性和hash模式相比略差。
+			3. 应用部署上线时需要后端人员支持，解决刷新页面服务端404的问题。
+			abstract模式
+			适用于所有JavaScript环境，例如服务器端使用Node.js。如果没有浏览器API，路由器将自动被强制进入此模式，然后在
+			这里进行切换
+			const router = new VueRouter({routes, mode:'hash|history|abstract',})
+
+			15.虚拟DOM
+			1、什么是虚拟DOM
+			虚拟DOM是用JavaScript对象描述DOM的层次结构。DOM中的一切属性都在虚拟DOM中有对应的属性。本质上是JS 和 DOM 之间的一个映射缓存。
+			要点：虚拟 DOM 是 JS 对象；虚拟 DOM 是对真实 DOM 的描述。
+			diff发生在虚拟DOM上。diff算法是在新虚拟DOM和老虚拟DOM进行diff（精细化比对），实现最小量更新，最后反映到真正的DOM上。
+			最小量更新。key是vnode节点的唯一标识，告诉了diff算法，更改前后他们是同一个节点。
+			只有是同一个虚拟节点，才进行精细化比较，否则就暴力删除旧的、插入新的。
+			2.diff算法
+			1.是否在同一层，只进行同层比较，不会进行跨层比较。
+			2.是否有相同的父级
+			3.diff是采用先序深度优先遍历得方式进行节点比较的，即，当比较某个节点时，如果该节点存在子节点，
+			那么会优先比较他的子节点，直到所有子节点全部比较完成，才会开始去比较改节点的下一个同层级节点。
+			不好理解吗？没关系，我们画个图看一下，就很清晰了
+			比较两个节点是否是相同节点，判断是否是相同节点的条件是，key和sel（选择器）必须都相同（那有的人可能会说了，
+			那我标签没有key怎么办啊，没有key那就是undefined，undefined === undefined 始终为true，
+			所以没有key只需要保证sel相同就行）。如果不相同，那么执行替换操作
+			（即新增新vnode上的元素，删除旧vnode上的元素 例如，原来是div，新vnode变成了p，那么就是新增p元素，再删除div元素。
+			相当于就是p替换了div），这一步，只有比较根节点时，是在patch函数中进行的。
+			非根节点都是在updateChildren函数中执行的，因为根节点只会有一个，可以直接比较，而其他节点会存在多个，
+			需要通过一些算法来判断，具体详情后面会说
+			如果节点相同，那么进去第二部分，即比较两个节点的属性是否相同，节点是否存在文本，文本是否相同。
+			是否存在子节点，子节点是否相同。这部分主要在patchVnode中执行
+			那么，在第二部分，会做哪些事情呢。
+			1、如果存在文本时，更新文本
+			2、如果存在属性时，更新属性
+			3、如果存在子节点时，更新子节点
+			那么，如何更新呢，逻辑也很简单，遵循以下规则：
+			1、如果旧vnode上存在，而新vnode上不存在，那么执行删除操作
+			2、如果旧vnode上不存在，而新vnode上存在，那么执行新增操作
+			3、如果新旧vnode上都存在，那么执行替换操作（即，新增新的，删除旧的），文本，和属性的替换是在这部分完成。
+			而对于子节点，如果新vnode和旧vnode上都存在子节点时，那么会进入第三部分比较。比较子节点的差异。
+			上面我们说了，patch是比较的开始，相当于是diff的入口，diff就是从这一步开始的。那么既然是开始
+			，说明patch函数比较的肯定就是两个新旧vdom的根节点了。所以，两个vdom直接的比较，patch是只会触发一次的。
+			作用：比较两个虚拟dom根节点是否相同。
+
+	</body>
+</html>

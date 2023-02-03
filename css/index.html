@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		1.元素居中对齐
+		(1)position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		margin: auto;
+		(2)position: absolute;
+		top: 50%;
+		left: 50%;
+		margin-top: -100px;
+		margin-left: -100px;
+		(或者用transform: translate(-50%,-50%);)
+		(3)display: flex;
+		justify-content: center;
+		align-items: center;
+
+
+		2.css3动画
+		<transition name="hello"></transition>
+		.hello-enter-active{
+		animation: atguigu 0.5s linear;
+		}
+		.hello-leave-active{
+		animation: atguigu 0.5s linear reverse;
+		}
+
+		@keyframes atguigu {
+		from{
+		transform: translateX(-100%);
+		}
+		to{
+		transform: translateX(0px);
+		}
+		}
+		/* 进入的起点、离开的终点 */
+		.hello-enter,.hello-leave-to{
+		transform: translateX(-100%);
+		}
+		.hello-enter-active,.hello-leave-active{
+		transition: 0.5s linear;
+		}
+		/* 进入的终点、离开的起点 */
+		.hello-enter-to,.hello-leave{
+		transform: translateX(0);
+		}
+
+		3.伪元素和伪类
+		css伪类还有伪元素，样式穿透
+		首先说一下伪类和伪元素的相同之处，
+		伪类和伪元素都不出现在源文件和文档树中。也就是说在html源文件中是看不到伪类和伪元素的。
+		不同之处
+		伪类其实就是基于普通DOM元素而产生的不同状态，他是DOM元素的某一特征。伪元素能够创建在DOM树中不存在的抽象对象，而且这些抽象对象是能够访问到的。
+		一句话总结不同之处就是，伪元素产生新对象，在DOM树中看不到，但是可以操作；伪类不产生新的对象，仅是DOM中一个元素的不同状态；
+
+		4.position的方法
+		1.常见四种
+		static默认布局。元素出现在正常的流中（忽略 top, bottom, left, right 或者 z-index 声明）
+		relative
+		absoute
+		fixed(生成绝对定位的元素，相对于浏览器窗口进行定位，和absoute的区别是fixed不会跟随屏幕滚动(常见的各种贴屏广告))
+		2.不常见
+		inherit (规定应该从父元素继承 position 属性的值)
+		initial (设置positon的值为默认值) initial 关键字可用于任何 HTML 元素上的任何 CSS 属性，不是postion特有的
+		unset(设置positon的值为不设置)
+		sticky 粘性定位 它的行为就像 position:relative; 而当页面滚动超出目标区域时，它的表现就像 position:fixed;，它会固定在目标位置。
+
+		5.flex布局
+		justify-content属性定义了项目在主轴上的对齐方式。
+		.box {
+		flex-direction: row | row-reverse | column | column-reverse;
+		justify-content: flex-start | flex-end | center | space-between | space-around;
+		flex-wrap: nowrap | wrap | wrap-reverse;
+		align-items: flex-start | flex-end | center | baseline | stretch;
+		flex属性是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 auto。后两个属性可选。
+		}
+
+		6.盒子模型
+		把所有的网页元素都看成一个盒子，它具有： content，padding，border，margin 四个属性，这就是盒子模型
+		盒子模型有两种形式：标准盒子模型，怪异盒子模型
+		两种模式可以利用box-sizing属性进行自行选择：
+		标准模式：box-sizing:content-box;
+		怪异模式：box-sizing:border-box;
+		两种模式的区别：
+		标准模式会被设置的padding撑开
+		而怪异模式则相当于将盒子的大小固定好，再将内容装入盒子，盒子的大小并不会被padding所撑开
+	</body>
+</html>

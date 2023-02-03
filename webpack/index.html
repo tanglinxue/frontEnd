@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		63.webpack
+		现在的前端网页功能丰富，特别是SPA（single page web application 单页应用）技术流行后，
+		JavaScript的复杂度增加和需要一大堆依赖包，还需要解决Scss，Less……新增样式的扩展写法的编译工作。
+		Entry：入口，Webpack 执行构建的第一步将从 Entry 开始，可抽象成输入。
+		告诉webpack要使用哪个模块作为构建项目的起点，默认为./src/index.js
+		output ：出口，告诉webpack在哪里输出它打包好的代码以及如何命名，默认为./dist
+		Module：模块，在 Webpack 里一切皆模块，一个模块对应着一个文件。Webpack 会从配置的 Entry 开始递归找出所有依赖的模块。
+		Chunk：代码块，一个 Chunk 由多个模块组合而成，用于代码合并与分割
+		Loader：模块转换器，用于把模块原内容按照需求转换成新内容。
+		Plugin：扩展插件，在 Webpack 构建流程中的特定时机会广播出对应的事件，插件可以监听这些事件的发生，在特定时机做对应的事情。
+		代码分割：提取多个页面的公共代码、提取首屏不需要执行部分的代码让其异步加载
+		前端为什么要进行打包和构建？
+		体积更小（Tree-shaking、压缩、合并），加载更快
+		编译高级语言和语法（TS、ES6、模块化、scss）
+		兼容性和错误检查（polyfill,postcss,eslint）
+		统一、高效的开发环境
+		统一的构建流程和产出标准
+		集成公司构建规范（提测、上线）
+		bundle：是由webpack打包出来的文件
+		chunk：是指webpack在进行模块依赖分析的时候，代码分割出来的代码块
+		module：是开发中的单个模块
+
+		主要loader
+		url-loader 处理图片资源
+		// 图片大小小于8kb，就会被base64处理
+		// 优点: 减少请求数量（减轻服务器压力）
+		// 缺点：图片体积会更大（文件请求速度更慢）
+		limit: 8 * 1024,
+		esModule: false,
+		// 问题：因为url-loader默认使用es6模块化解析，而html-loader引入图片是commonjs
+		// 解析时会出问题：[object Module]
+		// 解决：关闭url-loader的es6模块化，使用commonjs解析
+
+		html-loader 处理html文件的img图片（负责引入img，从而能被url-loader进行处理）
+
+		file-loader 打包其他资源(除了html/js/css资源以外的资源)
+
+		MiniCssExtractPlugin.loader, // 这个loader取代style-loader。作用：提取js中的css成单独文件
+		new MiniCssExtractPlugin 提取js中的css成单独文件
+		css兼容性处理 postcss-loader
+		new OptimizeCssAssetsWebpackPlugin() // 压缩css
+		eslint-loader
+		options: {
+		// 自动修复eslint的错误
+		fix: true
+		}
+
+		// 压缩html代码
+		minify: {
+		// 移除空格
+		collapseWhitespace: true,
+		// 移除注释
+		removeComments: true
+		}
+		js兼容性处理
+		babel-loader @babel/core
+		1. 基本js兼容性处理 --> @babel/preset-env
+		问题：只能转换基本语法，如promise高级语法不能转换
+		2. 全部js兼容性处理 --> @babel/polyfill
+		问题：我只要解决部分兼容性问题，但是将所有兼容性代码全部引入，体积太大了~
+		3. 需要做兼容性处理的就做：按需加载 --> core-js
+	</body>
+</html>
